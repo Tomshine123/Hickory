@@ -60,7 +60,10 @@ mkdir -p weights dataset \
   third_party/sam-3d-objects/checkpoints
 ```
 
-The dataset used for this work can be downloaded from
+The dataset used for this work is derived from
+[HOPE](https://github.com/swtyree/hope-dataset) and
+[ReplicaCAD](https://huggingface.co/datasets/ai-habitat/ReplicaCAD_dataset),
+and can be downloaded from
 [Google Drive](https://drive.google.com/drive/folders/1VTURxeCEqp3sND1iDEv0pL_SdmlJU0hS).
 Place the downloaded data under `dataset/`.
 
@@ -263,12 +266,6 @@ pose_data:
   path: "~/Hickory/dataset/NUS/CLB_1"
   topic: /lio_sam_ros2/mapping/odometry
   time_tol: 10.0
-```
-
-Run ROS bag data by passing the config file to `main.py`:
-
-```bash
-docker compose run --rm hickory python main.py params/b2_zed.yaml
 ```
 
 Before running custom data, check that the RGB/depth streams are synchronized,
