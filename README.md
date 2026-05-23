@@ -50,6 +50,20 @@ host folders into the container at runtime.
 
 ## Runtime Assets
 
+### Dataset preparation
+Prepared data used for this work, including RGB-D sequences rendered by moving
+cameras in prebuilt
+[ReplicaCAD](https://huggingface.co/datasets/ai-habitat/ReplicaCAD_dataset)
+scenes and our recorded NUS-CLB sequence, can be downloaded from
+[Google Drive](https://drive.google.com/drive/folders/1VTURxeCEqp3sND1iDEv0pL_SdmlJU0hS).
+Place the downloaded data under `dataset/`.
+
+For HOPE experiments, download the original
+[HOPE](https://github.com/swtyree/hope-dataset) dataset directly from upstream
+and use sequences `0000`-`0002`.
+
+
+### Model Checkpoints/Weights
 Create the expected local asset folders. For a local/non-Docker install, run the
 third-party clone commands above before creating the FoundationPose or SAM3D
 asset subdirectories.
@@ -60,16 +74,9 @@ mkdir -p weights dataset \
   third_party/sam-3d-objects/checkpoints
 ```
 
-The dataset used for this work is derived from
-[HOPE](https://github.com/swtyree/hope-dataset) and
-[ReplicaCAD](https://huggingface.co/datasets/ai-habitat/ReplicaCAD_dataset),
-and can be downloaded from
-[Google Drive](https://drive.google.com/drive/folders/1VTURxeCEqp3sND1iDEv0pL_SdmlJU0hS).
-Place the downloaded data under `dataset/`.
-
 Manual model downloads:
 
-### SAM3D checkpoints
+#### SAM3D checkpoints
 
 [SAM3D](https://github.com/facebookresearch/sam-3d-objects) checkpoints are
 hosted on [Hugging Face](https://huggingface.co/facebook/sam-3d-objects). You
@@ -105,7 +112,7 @@ After this, the file below should exist:
 third_party/sam-3d-objects/checkpoints/hf/pipeline.yaml
 ```
 
-### FoundationPose weights
+#### FoundationPose weights
 
 [FoundationPose](https://github.com/NVlabs/FoundationPose#data-prepare)
 weights are linked from the upstream repository's Data prepare section.
@@ -147,16 +154,19 @@ docker compose run --rm hickory python main.py params/b2_zed.yaml
 ### Hierarchical Representation Visualization:
 
 ```bash
-xhost +local:root
-
 docker compose run --rm hickory python hickory/visualization/scene.py \
   --objects-dir reconstruction/REPLICA/apt_0_1_test/
-
-xhost -local:root
 ```
 
 ### Superquadrics for Map Alignment
-Calculate the relative transform for two reconstructed scenes:
+
+First reconstruct two scenes under the same root directory, such as
+`reconstruction/REPLICA/apt_0_1_test` and
+`reconstruction/REPLICA/apt_0_2_test`.
+
+Calculate the relative transform for two reconstructed scenes. This also
+reports translation and rotation error against the ground-truth relative
+transform computed from the global-frame camera poses:
 
 ```bash
 docker compose run --rm hickory python hickory/align/clipper_solve.py \
@@ -168,26 +178,18 @@ docker compose run --rm hickory python hickory/align/clipper_solve.py \
 Visualize the alignment result:
 
 ```bash
-xhost +local:root
-
 docker compose run --rm hickory python hickory/visualization/alignment.py \
   --root reconstruction/REPLICA \
   --scene-a apt_0_1_test \
   --scene-b apt_0_2_test
-
-xhost -local:root
 ```
 
 ### Superquadrics for Robot Navigation:
 
 ```bash
-xhost +local:root
-
 docker compose run --rm hickory python hickory/navigation/interactive_scene_rrt_3d.py \
   --objects-dir-a reconstruction/REPLICA/apt_0_1_test/ \
   --show-3d
-
-xhost -local:root
 ```
 
 ## Preparing Custom Data
@@ -268,6 +270,12 @@ pose_data:
   time_tol: 10.0
 ```
 
+Run ROS bag data by passing the config file to `main.py`:
+
+```bash
+docker compose run --rm hickory python main.py params/b2_zed.yaml
+```
+
 Before running custom data, check that the RGB/depth streams are synchronized,
 camera intrinsics match the image resolution, depth is in the expected units,
 and poses are in meters.
@@ -275,12 +283,14 @@ and poses are in meters.
 ## Acknowledgments
 
 Hickory uses and builds on several third-party projects:
-- Segmentation uses [FastSAM](https://github.com/CASIA-LMC-Lab/FastSAM) and [OneFormer](https://github.com/SHI-Labs/OneFormer).
+
+- Segmentation uses [FastSAM](https://github.com/CASIA-LMC-Lab/FastSAM) and
+  [OneFormer](https://github.com/SHI-Labs/OneFormer).
 - The mapping module is based on
   [ROMAN](https://github.com/mit-acl/ROMAN).
 - Mesh reconstruction uses
   [SAM3D](https://github.com/facebookresearch/sam-3d-objects).
-- Pose Estimation uses
+- Pose estimation uses
   [FoundationPose](https://github.com/NVlabs/FoundationPose).
 - Object association for map alignment uses
   [CLIPPER](https://github.com/mit-acl/clipper).
